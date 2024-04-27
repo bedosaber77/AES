@@ -12,7 +12,7 @@ begin
     begin
       shift = temp[31-:8];
       temp = {temp, shift};
-      temp[31:0] = subBytes(temp[31:0]);
+      temp[31:0] = {c(temp[31:24]), c(temp[23:16]), c(temp[15:8]), c(temp[7:0])};
       temp = temp ^ Rcon(i/4 + 1);
     end
     expandedKeys[(1407-(i+4)*32)-:32] = expandedKeys[(1407-(i)*32)-:32] ^ temp;
