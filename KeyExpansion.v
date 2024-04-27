@@ -1,27 +1,35 @@
-module KeyExpansion(input [127:0] initialKey, output reg [1407:0] expandedKeys);
+module counter (input [255:0] key, output [1920:0] w);
+  KeyExpansion #(8, 14) key_expander (key, w);
+endmodule
+
+module KeyExpansion#(parameter nk=4,parameter nr=10)(initialKey, expandedKeys);
+input [(32*nk-1):0] initialKey;
+  output reg [(32*4*(nr+1)-1):0] expandedKeys;
 integer i;
 reg [31:0] temp;
 reg [7:0] shift;
 initial 
 begin
-    expandedKeys[1407-:128] = initialKey[127-:128];
-  for(i = 0; i<40; i=i+1) 
+  expandedKeys[(32*4*(nr+1)-1)-:32*nk] = initialKey[(32*nk-1)-:32*nk];
+  for(i = 0; i<4*(nr+1)-nk; i=i+1) 
   begin
-    temp = expandedKeys[(1407-(i+3)*32)-:32];
-    if(i % 4 == 0) 
+    temp = expandedKeys[((32*4*(nr+1)-1)-(i+nk-1)*32)-:32];
+    if(i % nk == 0) 
     begin
       shift = temp[31-:8];
       temp = {temp, shift};
       temp[31:0] = {c(temp[31:24]), c(temp[23:16]), c(temp[15:8]), c(temp[7:0])};
-      temp = temp ^ Rcon(i/4 + 1);
+      temp = temp ^ Rcon(i/nk + 1);
     end
-    expandedKeys[(1407-(i+4)*32)-:32] = expandedKeys[(1407-(i)*32)-:32] ^ temp;
+	else if(nk > 6 && i % nk == 4)
+	begin
+      temp[31:0] = {c(temp[31:24]), c(temp[23:16]), c(temp[15:8]), c(temp[7:0])};
+	end
+    expandedKeys[(32*4*(nr+1)-1-(i+nk)*32)-:32] = expandedKeys[(32*4*(nr+1)-1-(i)*32)-:32] ^ temp;
   end
 end
-
 ////////////////
-
-function [31:0] subBytes (input [31:0] a);
+function [31:0] subBytes (input [31:0] a); //DELETE!
 	begin
 		// Implement SubWord transformation for AES-128
 		subBytes[31:24]  = c(a[31:24]);
