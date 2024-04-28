@@ -1,10 +1,16 @@
-module counter (input [255:0] key, output [1920:0] w);
-  KeyExpansion #(8, 14) key_expander (key, w);
+module counter#(parameter NK = 4, parameter NR = 10)(key0, AllKeys);
+
+parameter NK = 4;
+parameter NR = 10;
+wire [32*NK-1:0] key0;
+wire [(32*4*(NR+1)-1):0] AllKeys; 
+KeyExpansion #(NK, NR) key_expander (key0, AllKeys);
+
 endmodule
 
-module KeyExpansion#(parameter nk=4,parameter nr=10)(initialKey, expandedKeys);
+module KeyExpansion#(parameter nk = 4,parameter nr = 10)(initialKey, expandedKeys);
 input [(32*nk-1):0] initialKey;
-  output reg [(32*4*(nr+1)-1):0] expandedKeys;
+output reg [(32*4*(nr+1)-1):0] expandedKeys;
 integer i;
 reg [31:0] temp;
 reg [7:0] shift;
