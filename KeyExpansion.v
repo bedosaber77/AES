@@ -1,5 +1,5 @@
 
-module kk#(parameter nk = 4,parameter nr = 10)(initialKey, expandedKeys);
+module KeyExpansion#(parameter nk = 4,parameter nr = 10)(initialKey, expandedKeys);
 input [(32*nk-1):0] initialKey;
 output reg [(32*4*(nr+1)-1):0] expandedKeys;
 integer i;
