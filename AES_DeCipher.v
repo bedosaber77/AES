@@ -10,27 +10,27 @@ wire [127:0] afterShiftRows;
 wire [32*NK-1:0] input_key = 128'h000102030405060708090a0b0c0d0e0f;
 
 KeyExpansion #(NK, NR) key_expander (input_key, ExpandedKeys);
-integer i = 0;
+integer i = NR;
 
 AddRoundKey r(input_bytes, ExpandedKeys[127-:128], afterfirstround);
 always@*
 state <= afterfirstround;
-DecyrptRound dec_rnd(state, ExpandedKeys[(1407-(NR-i)*128)-:128], out_state);
+DecyrptRound dec_rnd(state, ExpandedKeys[(1407-(i)*128)-:128], out_state);
 
 always @(posedge clk) begin
-	if(i<NR) begin
-		i = i+1;
+	if(i>0) begin
+		i = i-1;
 		state<=out_state;
 	end 
-	else if(i==NR)begin
+	else if(i==0)begin
 			state<= afterlastround;
-			i=i+1;
+			i=i-1;
 		end
 end
 
-InvSubBytes s_bytes(state,afterSubBytes);
-InvShiftRows s_rows(afterSubBytes,afterShiftRows);
-AddRoundKey r_key(afterShiftRows,ExpandedKeys[1407-:128],afterlastround);
+InvShiftRows s_rows(state,afterShiftRows);
+InvSubBytes s_bytes(afterShiftRows,afterSubBytes);
+AddRoundKey r_key(afterSubBytes,  ExpandedKeys[1407-:128],afterlastround);
 assign out = state;
 
 endmodule
