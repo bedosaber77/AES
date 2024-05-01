@@ -1,12 +1,11 @@
 
-module KeyExpansion#(parameter nk = 4,parameter nr = 10)(initialKey, expandedKeys);
+module kk#(parameter nk = 4,parameter nr = 10)(initialKey, expandedKeys);
 input [(32*nk-1):0] initialKey;
 output reg [(32*4*(nr+1)-1):0] expandedKeys;
 integer i;
 reg [31:0] temp;
 reg [7:0] shift;
-initial 
-begin
+always@* begin
   expandedKeys[(32*4*(nr+1)-1)-:32*nk] = initialKey[(32*nk-1)-:32*nk];
   for(i = 0; i<4*(nr+1)-nk; i=i+1) 
   begin
