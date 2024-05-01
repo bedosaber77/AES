@@ -27,4 +27,4 @@ wire [128*(NR+1)-1:0] AllKeys256;
 KeyExpansion #(NK, NR) key_expander (key256, AllKeys256);
 
 */
-
+endmodule
