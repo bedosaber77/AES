@@ -13,10 +13,10 @@ KeyExpansion #(NK, NR) key_expander (input_key, ExpandedKeys);
 
 integer i = 0;
 
-AddRoundKey r(input_bytes, AllKeys128[1407-:128], afterfirstround);
+AddRoundKey r(input_bytes, ExpandedKeys[1407-:128], afterfirstround);
 always@*
 state<=afterfirstround;
-EncyrptRound enc_rnd(state, AllKeys128[(1407-i*128)-:128], out_state);
+EncyrptRound enc_rnd(state, ExpandedKeys[(1407-i*128)-:128], out_state);
 
 always @(posedge clk) begin
 		if(i<NR) begin
@@ -31,7 +31,7 @@ end
 
 SubBytes s_bytes(state,afterSubBytes);
 ShiftRows s_rows(afterSubBytes,afterShiftRows);
-AddRoundKey r_key(afterShiftRows,AllKeys128[127:0],afterlastround);
+AddRoundKey r_key(afterShiftRows,ExpandedKeys[127:0],afterlastround);
 assign out = state;
 
 endmodule

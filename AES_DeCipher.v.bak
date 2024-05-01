@@ -1,4 +1,4 @@
-module AES_DeCipher#(parameter NR = 10,parameter NK = 4)(input clk , output [127:0] out);
+module AES_DeCipher#(parameter NR = 10)(input clk , output [127:0] out);
 wire [128*(NR+1)-1:0] ExpandedKeys;
 wire [127:0] input_bytes = 128'h69c4e0d86a7b0430d8cdb78070b4c55a;
 reg  [127:0] state;
