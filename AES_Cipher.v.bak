@@ -1,5 +1,5 @@
-module AES_Cipher#(parameter NR = 10)(input clk ,input [127:0]input_bytes, input[128*(NR+1)-1:0] ExpandedKeys, output [127:0] out);
-//input[128*(NR+1)-1:0] ExpandedKeys;
+module AES_Cipher#(parameter NR = 10)(input clk ,input [127:0]input_bytes, expandedKeys, output [127:0] out);
+input[128*(NR+1)-1:0] expandedKeys;
 //wire [127:0]input_key;
 reg  [127:0] state;
 wire  [127:0] afterfirstround;
@@ -11,10 +11,9 @@ wire [127:0] afterShiftRows;
 
 integer i = 1;
 
-AddRoundKey r(input_bytes, ExpandedKeys[127:0], afterfirstround);
-initial
-state <= afterfirstround;
-EncyrptRound enc_rnd(state, ExpandedKeys[(i*128)+:128], out_state);
+AddRoundKey r(input_bytes, expandedKeys[127:0], afterfirstround);
+state = afterfirstround;
+EncyrptRound enc_rnd(state, expandedKeys[(i*128)+:128], out_state);
 
 always @(posedge clk) begin
 	if(i<NR) begin
@@ -25,7 +24,7 @@ end
 
 SubBytes s_bytes(state,afterSubBytes);
 ShiftRows s_rows(afterSubBytes,afterShiftRows);
-AddRoundKey r_key(afterShiftRows,ExpandedKeys[1407-:128],afterlastround);
+AddRoundKey r_key(afterShiftRows,expandedKeys[1407-:128],afterlastround);
 assign out = afterlastround;
 
 endmodule
