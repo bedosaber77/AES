@@ -1,22 +1,21 @@
-module AES_Cipher#(parameter NR = 10,parameter NK = 4)(input clk ,output [127:0] out);
-wire [128*(NR+1)-1:0] ExpandedKeys;
-wire [127:0] input_bytes = 128'h00112233445566778899aabbccddeeff;
+module AES_Cipher#(parameter NR = 10,parameter NK = 4)(clk,input_bytes,ExpandedKeys ,out);
+input clk;
+input [127:0] input_bytes;
+input [128*(NR+1)-1:0] ExpandedKeys;
+output [127:0] out;
 reg  [127:0] state;
 wire [127:0] afterfirstround;
 wire [127:0] out_state;
 wire [127:0] afterlastround;
 wire [127:0] afterSubBytes;
 wire [127:0] afterShiftRows;
-wire [32*NK-1:0] input_key = 128'h000102030405060708090a0b0c0d0e0f;
-
-KeyExpansion #(NK, NR) key_expander (input_key, ExpandedKeys);
 
 integer i = 0;
 
-AddRoundKey r(input_bytes, ExpandedKeys[1407-:128], afterfirstround);
+AddRoundKey r(input_bytes, ExpandedKeys[((NR+1)*128-1)-:128], afterfirstround);
 always@*
 state<=afterfirstround;
-EncyrptRound enc_rnd(state, ExpandedKeys[(1407-i*128)-:128], out_state);
+EncyrptRound enc_rnd(state, ExpandedKeys[(((NR+1)*128-1)-i*128)-:128], out_state);
 
 always @(posedge clk) begin
 		if(i<NR) begin

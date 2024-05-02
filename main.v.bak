@@ -1,30 +1,34 @@
 module main(input clk);
 
-wire [127:0] input_bytes = 128'h3243f6a8885a308d313198a2e0370734;
-wire [127:0] output_bytes;
-reg [127:0] out;
+wire [127:0] input_bytes = 128'h00112233445566778899aabbccddeeff;
+// wire [127:0] expected128 =;
+// wire [127:0] expected192= ;
+// wire [127:0] expected256= ;
 
-parameter NK = 4;
-parameter NR = 10;
-wire [32*NK-1:0] key128 = 128'h2b7e151628aed2a6abf7158809cf4f3c;
-wire [128*(NR+1)-1:0] AllKeys128; 
-KeyExpansion #(NK, NR) key_expander (key128, AllKeys128);
-AES_Cipher #(NR) cipher (clk, input_bytes, AllKeys128, output_bytes);
+//1-Cipher with 128_key
+reg [127:0] out128 ;
+parameter NK_128 = 4;
+parameter NR_128 = 10;
+wire [32*NK_128-1:0] key128 = 128'h000102030405060708090a0b0c0d0e0f;
+wire [128*(NR_128+1)-1:0] AllKeys128; 
+KeyExpansion #(NK_128, NR_128) key_expander (key128, AllKeys128);
+AES_Cipher #(NR_128) cipher (clk, input_bytes, AllKeys128, out128);
 
-/*
+// //3-Cipher with 192_key
+// parameter NK_192 = 6;
+// parameter NR_192 = 12;
+// wire [32*NK_192-1:0] key192;
+// wire [128*(NR_192+1)-1:0] AllKeys192;
+// KeyExpansion #(NK_192, NR_192) key_expander (key192, AllKeys192);
+// AES_Cipher #(NR_192) cipher (clk, input_bytes, AllKeys192, output_bytes);
 
-parameter NK = 6;
-parameter NR = 12;
-wire [32*NK-1:0] key192;
-wire [128*(NR+1)-1:0] AllKeys192;
-KeyExpansion #(NK, NR) key_expander (key192, AllKeys192);
+// //5-Cipher with 128_key
+// parameter NK_256 = 8;
+// parameter NR_256 = 14;
+// wire [32*NK_256-1:0] key256;
+// wire [128*(NR_256+1)-1:0] AllKeys256;
+// KeyExpansion #(NK_256, NR_256) key_expander (key256, AllKeys256);
+// AES_Cipher #(NR_256) cipher (clk, input_bytes, AllKeys256, output_bytes);
 
 
-parameter NK = 8;
-parameter NR = 14;
-wire [32*NK-1:0] key256;
-wire [128*(NR+1)-1:0] AllKeys256;
-KeyExpansion #(NK, NR) key_expander (key256, AllKeys256);
-
-*/
 endmodule
