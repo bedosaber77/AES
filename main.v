@@ -1,8 +1,9 @@
-module main(input clk);
+module main(input clk,input enable , input reset ,input [1:0] mode,output isEqual,output[6:0] HEX0 , output[6:0] HEX1, output[6:0] HEX2, output[6:0] HEX3 );
 
 // wire [127:0] expected128 =;
 // wire [127:0] expected192= ;
 // wire [127:0] expected256= ;
+
 
 //1-Cipher with 128_key
 parameter NK_128 = 4;
@@ -13,6 +14,9 @@ wire [32*NK_128-1:0] key128 = 128'h000102030405060708090a0b0c0d0e0f;
 wire [128*(NR_128+1)-1:0] AllKeys128; 
 KeyExpansion #(NK_128, NR_128) key_expander_128 (key128, AllKeys128);
 AES_Cipher #(NR_128) cipher_128 (clk, inputplain128, AllKeys128, cipher128);
+wire [11:0] outbcd;
+BinarytoBCD b(cipher128[7:0],outbcd);
+bcdto7seg d(outbcd,HEX0,HEX1,HEX2,HEX3,HEX4);
 
 //2-deCipher with 128_key
 wire [127:0] inputcipher128 = 128'h69c4e0d86a7b0430d8cdb78070b4c55a;
@@ -50,5 +54,59 @@ wire [127:0] inputcipher256 = 128'h8ea2b7ca516745bfeafc49904b496089;
 wire [127:0] decipher256 ;
 
 AES_DeCipher #(NR_256) decipher_256 (clk, inputcipher256, AllKeys256, decipher256);
+
+endmodule
+
+
+
+module bcdto7seg (
+input [11:0] bcd,
+output[6:0] HEX0
+, output[6:0] HEX1
+, output[6:0] HEX2
+, output[6:0] HEX3
+, output[6:0] HEX4
+);
+    case (bcd[3:0])
+        4'b0000: HEX0 = 7'b1000000;
+        4'b0001: HEX0 = 7'b1111001;
+        4'b0010: HEX0 = 7'b0100100;
+        4'b0011: HEX0 = 7'b0110000;
+        4'b0100: HEX0 = 7'b0011001;
+        4'b0101: HEX0 = 7'b0010010;
+        4'b0110: HEX0 = 7'b0000010;
+        4'b0111: HEX0 = 7'b1111000;
+        4'b1000: HEX0 = 7'b0000000;
+        4'b1001: HEX0 = 7'b0010000;
+        default: HEX0 = 7'b1111111;
+    endcase
+    case (bcd[7:4])
+        4'b0000: HEX1 = 7'b1000000;
+        4'b0001: HEX1 = 7'b1111001;
+        4'b0010: HEX1 = 7'b0100100;
+        4'b0011: HEX1 = 7'b0110000;
+        4'b0100: HEX1 = 7'b0011001;
+        4'b0101: HEX1 = 7'b0010010;
+        4'b0110: HEX1 = 7'b0000010;
+        4'b0111: HEX1 = 7'b1111000;
+        4'b1000: HEX1 = 7'b0000000;
+        4'b1001: HEX1 = 7'b0010000;
+        default: HEX1 = 7'b1111111;
+    endcase
+    case (bcd[11:8])
+        4'b0000: HEX2 = 7'b1000000;
+        4'b0001: HEX2 = 7'b1111001;
+        4'b0010: HEX2 = 7'b0100100;
+        4'b0011: HEX2 = 7'b0110000;
+        4'b0100: HEX2 = 7'b0011001;
+        4'b0101: HEX2 = 7'b0010010;
+        4'b0110: HEX2 = 7'b0000010;
+        4'b0111: HEX2 = 7'b1111000;
+        4'b1000: HEX2 = 7'b0000000;
+        4'b1001: HEX2 = 7'b0010000;
+        default: HEX2 = 7'b1111111;
+    endcase
+assign HEX3=7'b1111111;
+assign HEX4=7'b1111111;
 
 endmodule
