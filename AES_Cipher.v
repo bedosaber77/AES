@@ -1,7 +1,8 @@
-module AES_Cipher#(parameter NR = 10,parameter NK = 4)(clk,input_bytes,ExpandedKeys ,out);
+module AES_Cipher#(parameter NR = 10,parameter NK = 4)(clk,input_bytes,ExpandedKeys,reset ,out);
 input clk;
 input [127:0] input_bytes;
 input [128*(NR+1)-1:0] ExpandedKeys;
+input reset;
 output [127:0] out;
 reg  [127:0] state;
 wire [127:0] afterfirstround;
@@ -17,14 +18,16 @@ always@*
 state<=afterfirstround;
 EncyrptRound enc_rnd(state, ExpandedKeys[(((NR+1)*128-1)-i*128)-:128], out_state);
 
-always @(posedge clk) begin
-		if(i<NR) begin
-			i = i+1;
-			state<=out_state;
+always @(posedge clk or posedge reset) begin
+	if(reset)
+		state<=afterfirstround;
+	else if(i<NR) begin
+		i = i+1;
+		state<=out_state;
 		end
-		else if(i==NR)begin
-			state<= afterlastround;
-			i=i+1;
+	else if(i==NR)begin
+		state<= afterlastround;
+		i=i+1;
 		end
 end
 

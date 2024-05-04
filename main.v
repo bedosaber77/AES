@@ -1,8 +1,14 @@
-module main(input clk,input enable , input reset ,input [1:0] mode,output isEqual,output[6:0] HEX0 , output[6:0] HEX1, output[6:0] HEX2, output[6:0] HEX3 );
+module main(input clk,
+input reset ,
+ input enable ,
+ input [1:0] mode,
+ output reg isEqual,
+ output[6:0] HEX0 , output[6:0] HEX1, output[6:0] HEX2, output[6:0] HEX3, output[6:0] HEX4, output[6:0] HEX5 );
 
-// wire [127:0] expected128 =;
-// wire [127:0] expected192= ;
-// wire [127:0] expected256= ;
+ wire [127:0] expected128=;
+ wire [127:0] expected192= ;
+ wire [127:0] expected256= ;
+reg [7:0] bcdinput;
 
 
 //1-Cipher with 128_key
@@ -13,15 +19,39 @@ wire [127:0] cipher128 ;
 wire [32*NK_128-1:0] key128 = 128'h000102030405060708090a0b0c0d0e0f;
 wire [128*(NR_128+1)-1:0] AllKeys128; 
 KeyExpansion #(NK_128, NR_128) key_expander_128 (key128, AllKeys128);
-AES_Cipher #(NR_128) cipher_128 (clk, inputplain128, AllKeys128, cipher128);
+AES_Cipher #(NR_128) cipher_128 (clk, inputplain128, AllKeys128,reset, cipher128);
 wire [11:0] outbcd;
-BinarytoBCD b(cipher128[7:0],outbcd);
-bcdto7seg d(outbcd,HEX0,HEX1,HEX2,HEX3,HEX4);
+BinarytoBCD b(bcdinput,outbcd);
+bcdto7seg d(outbcd,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
+
+always @(clk)
+begin
+    case (mode)
+        2'b000:begin
+            if(enable)begin
+            bcdinput = decipher128[7:0];
+            if(decipher128==expected_decipher128)
+            isEqual=1;
+            end
+            else begin
+            bcdinput = cipher128[7:0];
+            if(cipher128==expected128)
+                isEqual=1;
+            end
+        end
+        2'b001: 
+        2'b010: bcdinput = cipher192[7:0];
+        3'b011: bcdinput = decipher192[7:0];
+        3'b100: bcdinput = cipher256[7:0];
+        3'b101: bcdinput = decipher256[7:0];
+        default: bcdinput = 0;
+    endcase
+end
 
 //2-deCipher with 128_key
 wire [127:0] inputcipher128 = 128'h69c4e0d86a7b0430d8cdb78070b4c55a;
 wire [127:0] decipher128 ;
-AES_DeCipher #(NR_128) decipher_128 (clk, inputcipher128, AllKeys128, decipher128);
+AES_DeCipher #(NR_128) decipher_128 (clk, inputcipher128,reset,enable, AllKeys128, decipher128);
 
 //3-Cipher with 192_key
 parameter NK_192 = 6;
@@ -31,13 +61,13 @@ wire [127:0] cipher192 ;
 wire [32*NK_192-1:0] key192 = 192'h000102030405060708090a0b0c0d0e0f1011121314151617 ;
 wire [128*(NR_192+1)-1:0] AllKeys192;
 KeyExpansion #(NK_192, NR_192) key_expander_192 (key192, AllKeys192);
-AES_Cipher #(NR_192) cipher_192 (clk, inputplain192, AllKeys192, cipher192);
+AES_Cipher #(NR_192) cipher_192 (clk, inputplain192,reset, AllKeys192, cipher192);
 
 //4-deCipher with 192_key
 wire [127:0] inputcipher192 = 128'hdda97ca4864cdfe06eaf70a0ec0d7191;
 wire [127:0] decipher192 ;
 
-AES_DeCipher #(NR_192) decipher_192 (clk, inputcipher192, AllKeys192, decipher192);
+AES_DeCipher #(NR_192) decipher_192 (clk, inputcipher192,reset,enable AllKeys192, decipher192);
 
 //5-Cipher with 256_key
 parameter NK_256 = 8;
@@ -47,13 +77,13 @@ wire [127:0] cipher256 ;
 wire [32*NK_256-1:0] key256 = 256'h000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f;
 wire [128*(NR_256+1)-1:0] AllKeys256;
 KeyExpansion #(NK_256, NR_256) key_expander_256 (key256, AllKeys256);
-AES_Cipher #(NR_256) cipher_256 (clk, inputplain256, AllKeys256, cipher256);
+AES_Cipher #(NR_256) cipher_256 (clk, inputplain256,reset, AllKeys256, cipher256);
 
 //6-deCipher with 256_key
 wire [127:0] inputcipher256 = 128'h8ea2b7ca516745bfeafc49904b496089;
 wire [127:0] decipher256 ;
 
-AES_DeCipher #(NR_256) decipher_256 (clk, inputcipher256, AllKeys256, decipher256);
+AES_DeCipher #(NR_256) decipher_256 (clk, inputcipher256,reset,enable AllKeys256, decipher256);
 
 endmodule
 
@@ -61,52 +91,63 @@ endmodule
 
 module bcdto7seg (
 input [11:0] bcd,
-output[6:0] HEX0
-, output[6:0] HEX1
-, output[6:0] HEX2
+output [6:0] HEX0
+, output [6:0] HEX1
+, output [6:0] HEX2
 , output[6:0] HEX3
 , output[6:0] HEX4
+,output [6:0] HEX5
 );
+reg [6:0]HEX0reg;
+reg [6:0]HEX1reg;
+reg [6:0]HEX2reg;
+
+always@*
+begin
     case (bcd[3:0])
-        4'b0000: HEX0 = 7'b1000000;
-        4'b0001: HEX0 = 7'b1111001;
-        4'b0010: HEX0 = 7'b0100100;
-        4'b0011: HEX0 = 7'b0110000;
-        4'b0100: HEX0 = 7'b0011001;
-        4'b0101: HEX0 = 7'b0010010;
-        4'b0110: HEX0 = 7'b0000010;
-        4'b0111: HEX0 = 7'b1111000;
-        4'b1000: HEX0 = 7'b0000000;
-        4'b1001: HEX0 = 7'b0010000;
-        default: HEX0 = 7'b1111111;
+        4'b0000: HEX0reg = 7'b1000000;
+        4'b0001: HEX0reg = 7'b1111001;
+        4'b0010: HEX0reg = 7'b0100100;
+        4'b0011: HEX0reg = 7'b0110000;
+        4'b0100: HEX0reg = 7'b0011001;
+        4'b0101: HEX0reg = 7'b0010010;
+        4'b0110: HEX0reg = 7'b0000010;
+        4'b0111: HEX0reg = 7'b1111000;
+        4'b1000: HEX0reg = 7'b0000000;
+        4'b1001: HEX0reg = 7'b0010000;
+        default: HEX0reg = 7'b1111111;
     endcase
     case (bcd[7:4])
-        4'b0000: HEX1 = 7'b1000000;
-        4'b0001: HEX1 = 7'b1111001;
-        4'b0010: HEX1 = 7'b0100100;
-        4'b0011: HEX1 = 7'b0110000;
-        4'b0100: HEX1 = 7'b0011001;
-        4'b0101: HEX1 = 7'b0010010;
-        4'b0110: HEX1 = 7'b0000010;
-        4'b0111: HEX1 = 7'b1111000;
-        4'b1000: HEX1 = 7'b0000000;
-        4'b1001: HEX1 = 7'b0010000;
-        default: HEX1 = 7'b1111111;
+        4'b0000: HEX1reg = 7'b1000000;
+        4'b0001: HEX1reg = 7'b1111001;
+        4'b0010: HEX1reg = 7'b0100100;
+        4'b0011: HEX1reg = 7'b0110000;
+        4'b0100: HEX1reg = 7'b0011001;
+        4'b0101: HEX1reg = 7'b0010010;
+        4'b0110: HEX1reg = 7'b0000010;
+        4'b0111: HEX1reg = 7'b1111000;
+        4'b1000: HEX1reg = 7'b0000000;
+        4'b1001: HEX1reg = 7'b0010000;
+        default: HEX1reg = 7'b1111111;
     endcase
     case (bcd[11:8])
-        4'b0000: HEX2 = 7'b1000000;
-        4'b0001: HEX2 = 7'b1111001;
-        4'b0010: HEX2 = 7'b0100100;
-        4'b0011: HEX2 = 7'b0110000;
-        4'b0100: HEX2 = 7'b0011001;
-        4'b0101: HEX2 = 7'b0010010;
-        4'b0110: HEX2 = 7'b0000010;
-        4'b0111: HEX2 = 7'b1111000;
-        4'b1000: HEX2 = 7'b0000000;
-        4'b1001: HEX2 = 7'b0010000;
-        default: HEX2 = 7'b1111111;
+        4'b0000: HEX2reg = 7'b1000000;
+        4'b0001: HEX2reg = 7'b1111001;
+        4'b0010: HEX2reg = 7'b0100100;
+        4'b0011: HEX2reg = 7'b0110000;
+        4'b0100: HEX2reg = 7'b0011001;
+        4'b0101: HEX2reg = 7'b0010010;
+        4'b0110: HEX2reg = 7'b0000010;
+        4'b0111: HEX2reg = 7'b1111000;
+        4'b1000: HEX2reg = 7'b0000000;
+        4'b1001: HEX2reg = 7'b0010000;
+        default: HEX2reg = 7'b1111111;
     endcase
+end
+assign HEX0=HEX0reg;
+assign HEX1=HEX1reg;
+assign HEX2=HEX2reg;
 assign HEX3=7'b1111111;
 assign HEX4=7'b1111111;
-
+assign HEX5=7'b1111111;
 endmodule

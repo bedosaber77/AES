@@ -1,5 +1,7 @@
-module AES_DeCipher#(parameter NR = 10,parameter NK = 4)(clk,input_bytes,ExpandedKeys ,out);
+module AES_DeCipher#(parameter NR = 10,parameter NK = 4)(clk,input_bytes,reset,enable,ExpandedKeys ,out);
 input clk;
+input reset;
+input enable;
 input [127:0] input_bytes;
 input [128*(NR+1)-1:0] ExpandedKeys;
 output [127:0] out;
@@ -18,15 +20,20 @@ always@*
 state <= afterfirstround;
 DecyrptRound dec_rnd(state, ExpandedKeys[(((NR+1)*128-1)-(i)*128)-:128], out_state);
 
-always @(posedge clk) begin
-	if(i>0) begin
-		i = i-1;
-		state<=out_state;
-	end 
-	else if(i==0)begin
+always @(posedge clk or posedge reset) begin
+	if(reset)
+		state <= afterfirstround;
+	else if(enable)
+	begin 
+		if(i>0) begin
+			i = i-1;
+			state<=out_state;
+		end 
+		else if(i==0)begin
 			state<= afterlastround;
 			i=i-1;
 		end
+	end
 end
 
 InvShiftRows s_rows(state,afterShiftRows);
