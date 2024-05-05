@@ -12,57 +12,6 @@ output[6:0] HEX4,
 output[6:0] HEX5
 );
 
-always @(clk)
-begin
-    case (mode)
-        2'b00:begin
-            if(enable)begin
-                bcdinput = decipher128[7:0];
-                if(decipher128 == expected_decipher128)
-                    isEqual=1;
-            end
-            else begin
-                bcdinput = cipher128[7:0];
-                if(cipher128 == expected_cipher128)
-                    isEqual=1;
-            end
-        end
-        2'b01:begin
-            if(enable)begin
-                bcdinput = decipher192[7:0];
-                if(decipher192 == expected_decipher192)
-                    isEqual=1;
-            end
-            else begin
-                bcdinput = cipher192[7:0];
-                if(cipher192 == expected_cipher192)
-                    isEqual=1;
-            end
-        end
-        2'b10:begin
-            if(enable)begin
-                bcdinput = decipher256[7:0];
-                if(decipher256 == expected_decipher256)
-                    isEqual=1;
-            end
-            else begin
-                bcdinput = cipher256[7:0];
-                if(cipher256 == expected_cipher256)
-                    isEqual=1;
-            end
-        end
-        default: bcdinput = 0;
-    endcase
-end
-
-//Binary to 7-segment.
-reg [7:0] bcdinput; //set in the always block
-wire [11:0] outbcd; 
-BinarytoBCD b(bcdinput,outbcd);
-bcdto7seg d(outbcd,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
 //1.1 128-KeyExpansion.
 parameter NK_128 = 4; 
 parameter NR_128 = 10;
@@ -123,6 +72,58 @@ wire [127:0] input_decipher256 = 128'h8ea2b7ca516745bfeafc49904b496089;
 wire [127:0] expected_decipher256 = 128'h00112233445566778899aabbccddeeff;
 wire [127:0] decipher256;
 AES_DeCipher #(NR_256) decipher_256 (clk, input_decipher256, reset, enable, AllKeys256, decipher256);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+reg [7:0] bcdinput; //set in the always block
+
+always @(clk)
+begin
+    case (mode)
+        2'b00:begin
+            if(enable)begin
+                bcdinput = decipher128[7:0];
+                if(decipher128 == expected_decipher128)
+                    isEqual=1;
+            end
+            else begin
+                bcdinput = cipher128[7:0];
+                if(cipher128 == expected_cipher128)
+                    isEqual=1;
+            end
+        end
+        2'b01:begin
+            if(enable)begin
+                bcdinput = decipher192[7:0];
+                if(decipher192 == expected_decipher192)
+                    isEqual=1;
+            end
+            else begin
+                bcdinput = cipher192[7:0];
+                if(cipher192 == expected_cipher192)
+                    isEqual=1;
+            end
+        end
+        2'b10:begin
+            if(enable)begin
+                bcdinput = decipher256[7:0];
+                if(decipher256 == expected_decipher256)
+                    isEqual=1;
+            end
+            else begin
+                bcdinput = cipher256[7:0];
+                if(cipher256 == expected_cipher256)
+                    isEqual=1;
+            end
+        end
+        default: bcdinput = 0;
+    endcase
+end
+
+//Binary to 7-segment.
+wire [11:0] outbcd; 
+BinarytoBCD b(bcdinput,outbcd);
+bcdto7seg d(outbcd,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 
 endmodule
 
