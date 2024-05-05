@@ -1,93 +1,130 @@
-module main(input clk,
-input reset ,
- input enable ,
- input [1:0] mode,
- output reg isEqual,
- output[6:0] HEX0 , output[6:0] HEX1, output[6:0] HEX2, output[6:0] HEX3, output[6:0] HEX4, output[6:0] HEX5 );
-
- wire [127:0] expected128=;
- wire [127:0] expected192= ;
- wire [127:0] expected256= ;
-reg [7:0] bcdinput;
-
-
-//1-Cipher with 128_key
-parameter NK_128 = 4;
-parameter NR_128 = 10;
-wire [127:0] inputplain128 = 128'h00112233445566778899aabbccddeeff;
-wire [127:0] cipher128 ;
-wire [32*NK_128-1:0] key128 = 128'h000102030405060708090a0b0c0d0e0f;
-wire [128*(NR_128+1)-1:0] AllKeys128; 
-KeyExpansion #(NK_128, NR_128) key_expander_128 (key128, AllKeys128);
-AES_Cipher #(NR_128) cipher_128 (clk, inputplain128, AllKeys128,reset, cipher128);
-wire [11:0] outbcd;
-BinarytoBCD b(bcdinput,outbcd);
-bcdto7seg d(outbcd,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
+module main(
+input clk,
+input reset,
+input enable,
+input [1:0] mode,
+output reg isEqual,
+output[6:0] HEX0,
+output[6:0] HEX1,
+output[6:0] HEX2,
+output[6:0] HEX3,
+output[6:0] HEX4,
+output[6:0] HEX5
+);
 
 always @(clk)
 begin
     case (mode)
-        2'b000:begin
+        2'b00:begin
             if(enable)begin
-            bcdinput = decipher128[7:0];
-            if(decipher128==expected_decipher128)
-            isEqual=1;
+                bcdinput = decipher128[7:0];
+                if(decipher128 == expected_decipher128)
+                    isEqual=1;
             end
             else begin
-            bcdinput = cipher128[7:0];
-            if(cipher128==expected128)
-                isEqual=1;
+                bcdinput = cipher128[7:0];
+                if(cipher128 == expected_cipher128)
+                    isEqual=1;
             end
         end
-        2'b001: 
-        2'b010: bcdinput = cipher192[7:0];
-        3'b011: bcdinput = decipher192[7:0];
-        3'b100: bcdinput = cipher256[7:0];
-        3'b101: bcdinput = decipher256[7:0];
+        2'b01:begin
+            if(enable)begin
+                bcdinput = decipher192[7:0];
+                if(decipher192 == expected_decipher192)
+                    isEqual=1;
+            end
+            else begin
+                bcdinput = cipher192[7:0];
+                if(cipher192 == expected_cipher192)
+                    isEqual=1;
+            end
+        end
+        2'b10:begin
+            if(enable)begin
+                bcdinput = decipher256[7:0];
+                if(decipher256 == expected_decipher256)
+                    isEqual=1;
+            end
+            else begin
+                bcdinput = cipher256[7:0];
+                if(cipher256 == expected_cipher256)
+                    isEqual=1;
+            end
+        end
         default: bcdinput = 0;
     endcase
 end
 
-//2-deCipher with 128_key
-wire [127:0] inputcipher128 = 128'h69c4e0d86a7b0430d8cdb78070b4c55a;
-wire [127:0] decipher128 ;
-AES_DeCipher #(NR_128) decipher_128 (clk, inputcipher128,reset,enable, AllKeys128, decipher128);
+//Binary to 7-segment.
+reg [7:0] bcdinput; //set in the always block
+wire [11:0] outbcd; 
+BinarytoBCD b(bcdinput,outbcd);
+bcdto7seg d(outbcd,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 
-//3-Cipher with 192_key
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+//1.1 128-KeyExpansion.
+parameter NK_128 = 4; 
+parameter NR_128 = 10;
+wire [32*NK_128 - 1:0] key128 = 128'h000102030405060708090a0b0c0d0e0f;
+wire [128*(NR_128 + 1) - 1:0] AllKeys128; 
+KeyExpansion #(NK_128, NR_128) key_expander_128 (key128, AllKeys128);
+
+//1.2 Cipher with 128_key.
+wire [127:0] input_cipher128 = 128'h00112233445566778899aabbccddeeff;
+wire [127:0] expected_cipher128 = 128'h69c4e0d86a7b0430d8cdb78070b4c55a;
+wire [127:0] cipher128;
+AES_Cipher #(NR_128) cipher_128 (clk, input_cipher128, AllKeys128, reset, cipher128);
+
+//1.3 deCipher with 128_key.
+wire [127:0] input_decipher128 = 128'h69c4e0d86a7b0430d8cdb78070b4c55a;
+wire [127:0] expected_decipher128 = 128'h00112233445566778899aabbccddeeff;
+wire [127:0] decipher128;
+AES_DeCipher #(NR_128) decipher_128 (clk, input_decipher128, reset, enable, AllKeys128, decipher128);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+//2.1 192-KeyExpansion.
 parameter NK_192 = 6;
 parameter NR_192 = 12;
-wire [127:0] inputplain192 = 128'h00112233445566778899aabbccddeeff;
-wire [127:0] cipher192 ;
-wire [32*NK_192-1:0] key192 = 192'h000102030405060708090a0b0c0d0e0f1011121314151617 ;
-wire [128*(NR_192+1)-1:0] AllKeys192;
+wire [32*NK_192 - 1:0] key192 = 192'h000102030405060708090a0b0c0d0e0f1011121314151617 ;
+wire [128*(NR_192 + 1) - 1:0] AllKeys192;
 KeyExpansion #(NK_192, NR_192) key_expander_192 (key192, AllKeys192);
-AES_Cipher #(NR_192) cipher_192 (clk, inputplain192,reset, AllKeys192, cipher192);
 
-//4-deCipher with 192_key
-wire [127:0] inputcipher192 = 128'hdda97ca4864cdfe06eaf70a0ec0d7191;
-wire [127:0] decipher192 ;
+//2.2 Cipher with 192_key.
+wire [127:0] input_cipher192 = 128'h00112233445566778899aabbccddeeff;
+wire [127:0] expected_cipher192 = 128'hdda97ca4864cdfe06eaf70a0ec0d7191;
+wire [127:0] cipher192;
+AES_Cipher #(NR_192) cipher_192 (clk, input_cipher192, reset, AllKeys192, cipher192);
 
-AES_DeCipher #(NR_192) decipher_192 (clk, inputcipher192,reset,enable AllKeys192, decipher192);
+//2.3 deCipher with 192_key.
+wire [127:0] input_decipher192 = 128'hdda97ca4864cdfe06eaf70a0ec0d7191;
+wire [127:0] expected_decipher192 = 128'h00112233445566778899aabbccddeeff;
+wire [127:0] decipher192;
+AES_DeCipher #(NR_192) decipher_192 (clk, input_decipher192, reset, enable, AllKeys192, decipher192);
 
-//5-Cipher with 256_key
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+//3.1 256-KeyExpansion.
 parameter NK_256 = 8;
 parameter NR_256 = 14;
-wire [127:0] inputplain256 = 128'h00112233445566778899aabbccddeeff;
-wire [127:0] cipher256 ;
-wire [32*NK_256-1:0] key256 = 256'h000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f;
-wire [128*(NR_256+1)-1:0] AllKeys256;
+wire [32*NK_256 - 1:0] key256 = 256'h000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f;
+wire [128*(NR_256 + 1) - 1:0] AllKeys256;
 KeyExpansion #(NK_256, NR_256) key_expander_256 (key256, AllKeys256);
-AES_Cipher #(NR_256) cipher_256 (clk, inputplain256,reset, AllKeys256, cipher256);
 
-//6-deCipher with 256_key
-wire [127:0] inputcipher256 = 128'h8ea2b7ca516745bfeafc49904b496089;
-wire [127:0] decipher256 ;
+//3.2 Cipher with 256_key.
+wire [127:0] input_cipher256 = 128'h00112233445566778899aabbccddeeff;
+wire [127:0] expected_cipher256 = 128'h8ea2b7ca516745bfeafc49904b496089;
+wire [127:0] cipher256;
+AES_Cipher #(NR_256) cipher_256 (clk, input_cipher256, reset, AllKeys256, cipher256);
 
-AES_DeCipher #(NR_256) decipher_256 (clk, inputcipher256,reset,enable AllKeys256, decipher256);
+//3.3 deCipher with 256_key.
+wire [127:0] input_decipher256 = 128'h8ea2b7ca516745bfeafc49904b496089;
+wire [127:0] expected_decipher256 = 128'h00112233445566778899aabbccddeeff;
+wire [127:0] decipher256;
+AES_DeCipher #(NR_256) decipher_256 (clk, input_decipher256, reset, enable, AllKeys256, decipher256);
 
 endmodule
-
-
 
 module bcdto7seg (
 input [11:0] bcd,
