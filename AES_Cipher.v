@@ -14,13 +14,17 @@ wire [127:0] afterShiftRows;
 integer i = 0;
 
 AddRoundKey r(input_bytes, ExpandedKeys[((NR+1)*128-1)-:128], afterfirstround);
-always@*
-state<=afterfirstround;
+
+
 EncyrptRound enc_rnd(state, ExpandedKeys[(((NR+1)*128-1)-i*128)-:128], out_state);
 
 always @(posedge clk or posedge reset) begin
 	if(reset)
 		state<=afterfirstround;
+	else if (i==0) begin
+	state<=afterfirstround;
+	i=i+1;
+	end
 	else if(i<NR) begin
 		i = i+1;
 		state<=out_state;

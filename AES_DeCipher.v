@@ -16,13 +16,16 @@ wire [127:0] afterShiftRows;
 integer i = NR;
 
 AddRoundKey r(input_bytes, ExpandedKeys[127-:128], afterfirstround);
-always@*
-state <= afterfirstround;
+
 DecyrptRound dec_rnd(state, ExpandedKeys[(((NR+1)*128-1)-(i)*128)-:128], out_state);
 
 always @(posedge clk or posedge reset) begin
 	if(reset)
-		state <= afterfirstround;
+		state<=afterfirstround;
+	else if (i==NR) begin
+		state<=afterfirstround;
+		i=i-1;
+	end
 	else if(enable)
 	begin 
 		if(i>0) begin

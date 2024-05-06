@@ -1,4 +1,4 @@
-module main(
+module AES(
 input clk,
 input reset,
 input enable,
