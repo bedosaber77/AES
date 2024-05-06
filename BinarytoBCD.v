@@ -10,7 +10,7 @@ reg [3:0] hundreds;
 
 integer i;
 
-initial begin
+always@* begin
   units = 0;
   tens = 0;
   hundreds = 0;

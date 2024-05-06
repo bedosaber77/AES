@@ -11,7 +11,7 @@ output[6:0] HEX4,
 output[6:0] HEX5
 );
 wire [1:0] mode = 2'b00;
-
+integer i = 0;
 //1.1 128-KeyExpansion.
 parameter NK_128 = 4; 
 parameter NR_128 = 10;
@@ -77,8 +77,9 @@ AES_DeCipher #(NR_256) decipher_256 (clk, input_decipher256, reset, enable, AllK
 
 reg [7:0] bcdinput; //set in the always block
 
-always @(clk)
+always @(posedge clk)
 begin
+    i=i+1;
     case (mode)
         2'b00:begin
             if(enable)begin
@@ -121,8 +122,11 @@ begin
 end
 
 //Binary to 7-segment.
-wire [11:0] outbcd; 
-BinarytoBCD b(bcdinput,outbcd);
+wire [11:0] outbcd;
+wire [7:0] binary;
+assign binary = (i==0) ? input_cipher128[7:0] : bcdinput;
+ 
+BinarytoBCD b(binary,outbcd);
 bcdto7seg d(outbcd,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 
 endmodule
