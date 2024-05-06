@@ -13,7 +13,7 @@ wire [127:0] afterSubBytes;
 wire [127:0] afterShiftRows;
 
 
-integer i = NR;
+integer i = NR + 1;
 
 AddRoundKey r(input_bytes, ExpandedKeys[127-:128], afterfirstround);
 

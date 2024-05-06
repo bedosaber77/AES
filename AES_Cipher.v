@@ -11,7 +11,7 @@ wire [127:0] afterlastround;
 wire [127:0] afterSubBytes;
 wire [127:0] afterShiftRows;
 
-integer i = 0;
+integer i = -1;
 
 AddRoundKey r(input_bytes, ExpandedKeys[((NR+1)*128-1)-:128], afterfirstround);
 
@@ -22,8 +22,8 @@ always @(posedge clk or posedge reset) begin
 	if(reset)
 		state<=afterfirstround;
 	else if (i==0) begin
-	state<=afterfirstround;
-	i=i+1;
+		i=i+1;
+		state<=afterfirstround;
 	end
 	else if(i<NR) begin
 		i = i+1;

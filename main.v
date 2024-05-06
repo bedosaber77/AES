@@ -2,7 +2,6 @@ module AES(
 input clk,
 input reset,
 input enable,
-input [1:0] mode,
 output reg isEqual,
 output[6:0] HEX0,
 output[6:0] HEX1,
@@ -11,6 +10,7 @@ output[6:0] HEX3,
 output[6:0] HEX4,
 output[6:0] HEX5
 );
+wire [1:0] mode = 2'b00;
 
 //1.1 128-KeyExpansion.
 parameter NK_128 = 4; 
@@ -44,7 +44,7 @@ KeyExpansion #(NK_192, NR_192) key_expander_192 (key192, AllKeys192);
 wire [127:0] input_cipher192 = 128'h00112233445566778899aabbccddeeff;
 wire [127:0] expected_cipher192 = 128'hdda97ca4864cdfe06eaf70a0ec0d7191;
 wire [127:0] cipher192;
-AES_Cipher #(NR_192) cipher_192 (clk, input_cipher192, reset, AllKeys192, cipher192);
+AES_Cipher #(NR_192) cipher_192 (clk, input_cipher192, AllKeys192, reset, cipher192);
 
 //2.3 deCipher with 192_key.
 wire [127:0] input_decipher192 = 128'hdda97ca4864cdfe06eaf70a0ec0d7191;
@@ -65,7 +65,7 @@ KeyExpansion #(NK_256, NR_256) key_expander_256 (key256, AllKeys256);
 wire [127:0] input_cipher256 = 128'h00112233445566778899aabbccddeeff;
 wire [127:0] expected_cipher256 = 128'h8ea2b7ca516745bfeafc49904b496089;
 wire [127:0] cipher256;
-AES_Cipher #(NR_256) cipher_256 (clk, input_cipher256, reset, AllKeys256, cipher256);
+AES_Cipher #(NR_256) cipher_256 (clk, input_cipher256, AllKeys256, reset, cipher256);
 
 //3.3 deCipher with 256_key.
 wire [127:0] input_decipher256 = 128'h8ea2b7ca516745bfeafc49904b496089;
