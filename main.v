@@ -2,16 +2,16 @@ module AES(
 input clk,
 input reset,
 input enable,
+input [1:0] mode,
 output reg isEqual,
 output[6:0] HEX0,
 output[6:0] HEX1,
-output[6:0] HEX2,
-output[6:0] HEX3,
-output[6:0] HEX4,
-output[6:0] HEX5
+output[6:0] HEX2
+//,output[6:0] HEX3,
+//output[6:0] HEX4,
+//output[6:0] HEX5
 );
-wire [1:0] mode = 2'b00;
-integer i = 0;
+integer i = -1;
 //1.1 128-KeyExpansion.
 parameter NK_128 = 4; 
 parameter NR_128 = 10;
@@ -124,10 +124,11 @@ end
 //Binary to 7-segment.
 wire [11:0] outbcd;
 wire [7:0] binary;
-assign binary = (i==0) ? input_cipher128[7:0] : bcdinput;
+assign binary = (i==0) ? 8'b0 : bcdinput;
  
 BinarytoBCD b(binary,outbcd);
-bcdto7seg d(outbcd,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
+//bcdto7seg d(outbcd,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
+bcdto7seg d(outbcd,HEX0,HEX1,HEX2);
 
 endmodule
 
@@ -136,9 +137,9 @@ input [11:0] bcd,
 output [6:0] HEX0
 , output [6:0] HEX1
 , output [6:0] HEX2
-, output[6:0] HEX3
-, output[6:0] HEX4
-,output [6:0] HEX5
+//, output[6:0] HEX3
+//, output[6:0] HEX4
+//,output [6:0] HEX5
 );
 reg [6:0]HEX0reg;
 reg [6:0]HEX1reg;
@@ -189,7 +190,7 @@ end
 assign HEX0=HEX0reg;
 assign HEX1=HEX1reg;
 assign HEX2=HEX2reg;
-assign HEX3=7'b1111111;
-assign HEX4=7'b1111111;
-assign HEX5=7'b1111111;
+//assign HEX3=7'b1111111;
+//assign HEX4=7'b1111111;
+//assign HEX5=7'b1111111;
 endmodule

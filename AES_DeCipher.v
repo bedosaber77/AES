@@ -21,7 +21,7 @@ DecyrptRound dec_rnd(state, ExpandedKeys[(((NR+1)*128-1)-(i)*128)-:128], out_sta
 
 always @(posedge clk or posedge reset) begin
 	if(reset)
-		state<=afterfirstround;
+		i=NR+1;
 	else if (i==NR) begin
 		state<=afterfirstround;
 		i=i-1;
@@ -42,6 +42,7 @@ end
 InvShiftRows s_rows(state,afterShiftRows);
 InvSubBytes s_bytes(afterShiftRows,afterSubBytes);
 AddRoundKey r_key(afterSubBytes,  ExpandedKeys[((NR+1)*128-1)-:128],afterlastround);
-assign out = state;
+
+assign out = (i==NR) ? input_bytes : state;
 
 endmodule

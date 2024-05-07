@@ -20,7 +20,7 @@ EncyrptRound enc_rnd(state, ExpandedKeys[(((NR+1)*128-1)-i*128)-:128], out_state
 
 always @(posedge clk or posedge reset) begin
 	if(reset)
-		state<=afterfirstround;
+		i=-1;
 	else if (i==0) begin
 		i=i+1;
 		state<=afterfirstround;
@@ -38,6 +38,8 @@ end
 SubBytes s_bytes(state,afterSubBytes);
 ShiftRows s_rows(afterSubBytes,afterShiftRows);
 AddRoundKey r_key(afterShiftRows,ExpandedKeys[127:0],afterlastround);
-assign out = state;
+//assign out = state;
+assign out = (i==0) ? input_bytes : state;
+
 
 endmodule
