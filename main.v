@@ -1,7 +1,7 @@
 module AES(
 input clk,
 input reset,
-input enable,
+
 input [1:0] mode,
 output reg isEqual,
 output[6:0] HEX0,
@@ -11,7 +11,10 @@ output[6:0] HEX2
 //output[6:0] HEX4,
 //output[6:0] HEX5
 );
-integer i = -1;
+reg enable128;
+reg enable192;
+reg enable256;
+integer i = 0;
 //1.1 128-KeyExpansion.
 parameter NK_128 = 4; 
 parameter NR_128 = 10;
@@ -26,10 +29,10 @@ wire [127:0] cipher128;
 AES_Cipher #(NR_128) cipher_128 (clk, input_cipher128, AllKeys128, reset, cipher128);
 
 //1.3 deCipher with 128_key.
-wire [127:0] input_decipher128 = 128'h69c4e0d86a7b0430d8cdb78070b4c55a;
+wire [127:0] input_decipher128;
 wire [127:0] expected_decipher128 = 128'h00112233445566778899aabbccddeeff;
 wire [127:0] decipher128;
-AES_DeCipher #(NR_128) decipher_128 (clk, input_decipher128, reset, enable, AllKeys128, decipher128);
+AES_DeCipher #(NR_128) decipher_128 (clk, input_decipher128, reset, enable128, AllKeys128, decipher128);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -47,10 +50,10 @@ wire [127:0] cipher192;
 AES_Cipher #(NR_192) cipher_192 (clk, input_cipher192, AllKeys192, reset, cipher192);
 
 //2.3 deCipher with 192_key.
-wire [127:0] input_decipher192 = 128'hdda97ca4864cdfe06eaf70a0ec0d7191;
+wire [127:0] input_decipher192;
 wire [127:0] expected_decipher192 = 128'h00112233445566778899aabbccddeeff;
 wire [127:0] decipher192;
-AES_DeCipher #(NR_192) decipher_192 (clk, input_decipher192, reset, enable, AllKeys192, decipher192);
+AES_DeCipher #(NR_192) decipher_192 (clk, input_decipher192, reset, enable192, AllKeys192, decipher192);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -68,22 +71,36 @@ wire [127:0] cipher256;
 AES_Cipher #(NR_256) cipher_256 (clk, input_cipher256, AllKeys256, reset, cipher256);
 
 //3.3 deCipher with 256_key.
-wire [127:0] input_decipher256 = 128'h8ea2b7ca516745bfeafc49904b496089;
+wire [127:0] input_decipher256;
 wire [127:0] expected_decipher256 = 128'h00112233445566778899aabbccddeeff;
 wire [127:0] decipher256;
-AES_DeCipher #(NR_256) decipher_256 (clk, input_decipher256, reset, enable, AllKeys256, decipher256);
+AES_DeCipher #(NR_256) decipher_256 (clk, input_decipher256, reset, enable256, AllKeys256, decipher256);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 wire [7:0] bcdinput; //set in the always block
 assign bcdinput = 
-(mode==2'b00 && !enable) ? cipher128[7:0] :
-(mode==2'b00 &&  enable) ? decipher128[7:0] :
-(mode==2'b01 && !enable) ? cipher192[7:0] :
-(mode==2'b01 &&  enable) ? decipher192[7:0] :
-(mode==2'b10 && !enable) ? cipher256[7:0] :
-(mode==2'b10 &&  enable) ? decipher256[7:0] :
+(mode==2'b00 && i<=12) ? cipher128[7:0] :
+(mode==2'b00 &&  i>12) ? decipher128[7:0] :
+(mode==2'b01 && i<=14) ? cipher192[7:0] :
+(mode==2'b01 &&  i>14) ? decipher192[7:0] :
+(mode==2'b10 && i<=16) ? cipher256[7:0] :
+(mode==2'b10 &&  i>16) ? decipher256[7:0] :
 cipher128[7:0];
+always @ (posedge clk)
+begin
+    i=i+1;
+    if(i>=12) enable128=1;
+    else enable128=0;
+    if(i>=14) enable192=1;
+    else enable192=0;
+    if(i>=16) enable256 =1;
+    else enable256=0;
+end
+assign input_decipher128 = (enable128 && mode ==2'b00) ? cipher128 :128'bx;
+assign input_decipher192 = (enable192 && mode ==2'b01) ? cipher192 :128'bx;
+assign input_decipher256 = (enable256 && mode ==2'b10) ? cipher256 :128'bx;
+
 // always@(negedge reset)
 // begin
 //     i=0;

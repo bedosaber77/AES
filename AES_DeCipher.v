@@ -13,7 +13,7 @@ wire [127:0] afterSubBytes;
 wire [127:0] afterShiftRows;
 
 
-integer i = NR + 1;
+integer i = NR+1;
 
 AddRoundKey r(input_bytes, ExpandedKeys[127-:128], afterfirstround);
 
@@ -45,6 +45,6 @@ InvShiftRows s_rows(state,afterShiftRows);
 InvSubBytes s_bytes(afterShiftRows,afterSubBytes);
 AddRoundKey r_key(afterSubBytes,  ExpandedKeys[((NR+1)*128-1)-:128],afterlastround);
 
-assign out = (i==NR) ? input_bytes : state;
-
+assign out =(i==NR) ? afterfirstround : state;
+// 
 endmodule
