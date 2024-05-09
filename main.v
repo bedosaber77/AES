@@ -75,61 +75,67 @@ AES_DeCipher #(NR_256) decipher_256 (clk, input_decipher256, reset, enable, AllK
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-reg [7:0] bcdinput; //set in the always block
-always@(negedge reset)
-begin
-    i=0;
-end
-always @(posedge clk)
-begin
-    i=i+1;
-    case (mode)
-        2'b00:begin
-            if(enable)begin
-                bcdinput = decipher128[7:0];
-                if(decipher128 == expected_decipher128)
-                    isEqual=1;
-            end
-            else begin
-                bcdinput = cipher128[7:0];
-                if(cipher128 == expected_cipher128)
-                    isEqual=1;
-            end
-        end
-        2'b01:begin
-            if(enable)begin
-                bcdinput = decipher192[7:0];
-                if(decipher192 == expected_decipher192)
-                    isEqual=1;
-            end
-            else begin
-                bcdinput = cipher192[7:0];
-                if(cipher192 == expected_cipher192)
-                    isEqual=1;
-            end
-        end
-        2'b10:begin
-            if(enable)begin
-                bcdinput = decipher256[7:0];
-                if(decipher256 == expected_decipher256)
-                    isEqual=1;
-            end
-            else begin
-                bcdinput = cipher256[7:0];
-                if(cipher256 == expected_cipher256)
-                    isEqual=1;
-            end
-        end
-        default: bcdinput = 0;
-    endcase
-end
+wire [7:0] bcdinput; //set in the always block
+assign bcdinput = 
+(mode==2'b00 && !enable) ? cipher128[7:0] :
+(mode==2'b00 &&  enable) ? decipher128[7:0] :
+(mode==2'b01 && !enable) ? cipher192[7:0] :
+(mode==2'b01 &&  enable) ? decipher192[7:0] :
+(mode==2'b10 && !enable) ? cipher256[7:0] :
+(mode==2'b10 &&  enable) ? decipher256[7:0] :
+cipher128[7:0];
+// always@(negedge reset)
+// begin
+//     i=0;
+// end
+// always @(posedge clk)
+// begin
+//     i=i+1;
+//     case (mode)
+//         2'b00:begin
+//             if(enable)begin
+//                 bcdinput = decipher128[7:0];
+//                 if(decipher128 == expected_decipher128)
+//                     isEqual=1;
+//             end
+//             else begin
+//                 bcdinput = cipher128[7:0];
+//                 if(cipher128 == expected_cipher128)
+//                     isEqual=1;
+//             end
+//         end
+//         2'b01:begin
+//             if(enable)begin
+//                 bcdinput = decipher192[7:0];
+//                 if(decipher192 == expected_decipher192)
+//                     isEqual=1;
+//             end
+//             else begin
+//                 bcdinput = cipher192[7:0];
+//                 if(cipher192 == expected_cipher192)
+//                     isEqual=1;
+//             end
+//         end
+//         2'b10:begin
+//             if(enable)begin
+//                 bcdinput = decipher256[7:0];
+//                 if(decipher256 == expected_decipher256)
+//                     isEqual=1;
+//             end
+//             else begin
+//                 bcdinput = cipher256[7:0];
+//                 if(cipher256 == expected_cipher256)
+//                     isEqual=1;
+//             end
+//         end
+//         default: bcdinput = 0;
+//     endcase
+// end
 
 //Binary to 7-segment.
 wire [11:0] outbcd;
-wire [7:0] binary;
-assign binary = (i==0 ) ? 8'b0 : bcdinput;
- 
-BinarytoBCD b(binary,outbcd);
+
+BinarytoBCD b(bcdinput,outbcd);
 //bcdto7seg d(outbcd,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 bcdto7seg d(outbcd,HEX0,HEX1,HEX2);
 
