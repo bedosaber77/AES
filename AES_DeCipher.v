@@ -17,27 +17,26 @@ integer i = NR+1;
 
 AddRoundKey r(input_bytes, ExpandedKeys[127-:128], afterfirstround);
 
-DecyrptRound dec_rnd(state, ExpandedKeys[(((NR+1)*128-1)-(i)*128)-:128], out_state);
+DecyrptRound dec_rnd(state, ExpandedKeys[(((NR+1)*128-1)-(i-1)*128)-:128], out_state);
 
 always @(posedge clk or posedge reset) begin
 	if(reset) begin
 		i=NR+1;
 		state<=128'b0;
 	end
-	else if (i==NR) begin
-		state<=afterfirstround;
+	else if (enable && i==(NR+1)) begin
 		i=i-1;
-	end
-	else if(enable)
-	begin 
-		if(i>0) begin
-			i = i-1;
-			state<=out_state;
-		end 
-		else if(i==0)begin
-			state<= afterlastround;
-			i=i-1;
-		end
+		//state<=out_state;
+		state<=afterfirstround;
+	end	
+	else if(enable && i>1) begin 
+		i=i-1;
+		state<=out_state;
+		//state<=128'b10;
+	end 
+	else if(enable && i==1)begin
+		state<= afterlastround;
+		i=i-1;
 	end
 end
 
@@ -45,6 +44,6 @@ InvShiftRows s_rows(state,afterShiftRows);
 InvSubBytes s_bytes(afterShiftRows,afterSubBytes);
 AddRoundKey r_key(afterSubBytes,  ExpandedKeys[((NR+1)*128-1)-:128],afterlastround);
 
-assign out =(i==NR) ? afterfirstround : state;
-// 
+//assign out = state;
+assign out = (i==NR && enable) ? afterfirstround : state;
 endmodule
