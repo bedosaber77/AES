@@ -76,7 +76,10 @@ AES_DeCipher #(NR_256) decipher_256 (clk, input_decipher256, reset, enable, AllK
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 reg [7:0] bcdinput; //set in the always block
-
+always@(negedge reset)
+begin
+    i=0;
+end
 always @(posedge clk)
 begin
     i=i+1;
@@ -124,7 +127,7 @@ end
 //Binary to 7-segment.
 wire [11:0] outbcd;
 wire [7:0] binary;
-assign binary = (i==0) ? 8'b0 : bcdinput;
+assign binary = (i==0 ) ? 8'b0 : bcdinput;
  
 BinarytoBCD b(binary,outbcd);
 //bcdto7seg d(outbcd,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);

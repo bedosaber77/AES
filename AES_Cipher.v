@@ -19,8 +19,10 @@ AddRoundKey r(input_bytes, ExpandedKeys[((NR+1)*128-1)-:128], afterfirstround);
 EncyrptRound enc_rnd(state, ExpandedKeys[(((NR+1)*128-1)-i*128)-:128], out_state);
 
 always @(posedge clk or posedge reset) begin
-	if(reset)
+	if(reset) begin 
 		i=-1;
+		state<=128'b0;
+	end
 	else if (i==0) begin
 		i=i+1;
 		state<=afterfirstround;
