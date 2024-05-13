@@ -89,7 +89,7 @@ assign bcdinput =
 cipher128[7:0];
 
 always @(decipher128 or decipher192 or decipher256) begin
-	if(i==0) isEqual=0;
+	isEqual=0;
     if(decipher128==input_cipher128 && mode==2'b00)
        isEqual=1;
     if(decipher192==input_cipher192 && mode==2'b01)
@@ -104,7 +104,6 @@ begin
         enable128 =0;
         enable192 =0;
         enable256 =0;
-        //isEqual = 0;
     end 
     else begin
         i=i+1;
@@ -116,9 +115,9 @@ begin
         else enable256=0;    
     end
 end
-assign input_decipher128 = (enable128 && mode ==2'b00) ? cipher128 :128'bx;
-assign input_decipher192 = (enable192 && mode ==2'b01) ? cipher192 :128'bx;
-assign input_decipher256 = (enable256 && mode ==2'b10) ? cipher256 :128'bx;
+assign input_decipher128 = (enable128) ? cipher128 :128'bx;
+assign input_decipher192 = (enable192) ? cipher192 :128'bx;
+assign input_decipher256 = (enable256) ? cipher256 :128'bx;
 
 // always@(negedge reset)
 // begin
