@@ -87,6 +87,16 @@ assign bcdinput =
 (mode==2'b10 && i<=16) ? cipher256[7:0] :
 (mode==2'b10 &&  i>16) ? decipher256[7:0] :
 cipher128[7:0];
+
+always @(decipher128 or decipher192 or decipher256) begin
+	if(i==0) isEqual=0;
+    if(decipher128==input_cipher128 && mode==2'b00)
+       isEqual=1;
+    if(decipher192==input_cipher192 && mode==2'b01)
+        isEqual=1;
+    if(decipher256==input_cipher256 && mode==2'b10)
+        isEqual=1;
+end
 always @ (posedge clk or posedge reset)
 begin
     if(reset)begin
@@ -94,24 +104,16 @@ begin
         enable128 =0;
         enable192 =0;
         enable256 =0;
-        isEqual = 0;
-    end
-    
+        //isEqual = 0;
+    end 
     else begin
-    i=i+1;
-    if(i>=12) enable128=1;
-    else enable128=0;
-    if(i>=14) enable192=1;
-    else enable192=0;
-    if(i>=16) enable256 =1;
-    else enable256=0;    
-    if(i==0) isEqual=0;
-    if(decipher128==input_cipher128 && mode==2'b00)
-        isEqual=1;
-    if(decipher192==input_cipher192 && mode==2'b01)
-        isEqual=1;
-    if(decipher256==input_cipher256 && mode==2'b10)
-        isEqual=1;
+        i=i+1;
+        if(i>=12) enable128=1;
+        else enable128=0;
+        if(i>=14) enable192=1;
+        else enable192=0;
+        if(i>=16) enable256 =1;
+        else enable256=0;    
     end
 end
 assign input_decipher128 = (enable128 && mode ==2'b00) ? cipher128 :128'bx;
